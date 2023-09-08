@@ -1,0 +1,16 @@
+import time
+
+def one():
+    print("first one starts")
+    time.sleep(4)
+    print("first one ends")
+
+def two():
+    print("second one starts")
+    time.sleep(4)
+    print("second one ends")
+
+if __name__ == "__main__":
+    one()
+    two()
+
