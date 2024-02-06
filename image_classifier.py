@@ -1,6 +1,9 @@
 import tensorflow as tf
 from tensorflow.keras import datasets, layers, models
 import matplotlib.pyplot as plt
+import cv2
+import numpy as np
+
 
 # Load and prepare the CIFAR-10 dataset
 (train_images, train_labels), (test_images, test_labels) = datasets.cifar10.load_data()
@@ -43,3 +46,20 @@ plt.legend(loc='lower right')
 # Evaluate the model on the test set
 test_loss, test_acc = model.evaluate(test_images,  test_labels, verbose=2)
 print("Test accuracy:", test_acc)
+
+# Load an image using cv2
+image = cv2.imread('car.jpg')
+
+if image is not None and image.size > 0:
+    print("Image loaded successfully.")
+    image = cv2.resize(image, (32, 32))  # Resize the image to match the model's expected sizing
+    image = np.expand_dims(image, axis=0)  # Add a batch dimension
+
+    try:
+        predictions = model.predict(image)
+        predicted_class = class_names[np.argmax(predictions)]
+        print(f'This is probably a {predicted_class}')
+    except Exception as e:
+        print(f"An error occurred during prediction: {e}")
+else:
+    print("Failed to load the image or the image is empty.")
