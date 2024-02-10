@@ -1,0 +1,41 @@
+import torch
+from transformers import BertForQuestionAnswering, BertTokenizer
+
+class QnA:
+    def __init__(self):
+        self.model_name = 'bert-large-uncased-whole-word-masking-finetuned-squad'  # Select the pre-trained BERT model
+        self.model = BertForQuestionAnswering.from_pretrained(self.model_name)
+        self.tokenizer = BertTokenizer.from_pretrained(self.model_name)
+
+    def get_answer(self, question, context):
+        # Encode the input question and context
+        inputs = self.tokenizer.encode_plus(question, context, return_tensors="pt", add_special_tokens=True,
+                                            truncation=True, max_length=512)
+        input_ids = inputs["input_ids"].tolist()[0]
+
+        # Perform inference using the model to get start and end scores for the answer
+        outputs = self.model(**inputs)
+        answer_start_scores, answer_end_scores = outputs.start_logits, outputs.end_logits
+
+        # Use torch.argmax to find the maximum score for the start and end of the answer
+        answer_start = torch.argmax(answer_start_scores, dim=1).item()  # Ensure conversion to integer
+        answer_end = torch.argmax(answer_end_scores, dim=1).item() + 1  # Ensure conversion to integer
+
+        # Convert the tokens to a string for the answer
+        answer_tokens = self.tokenizer.convert_ids_to_tokens(input_ids[answer_start:answer_end])
+        answer = self.tokenizer.convert_tokens_to_string(answer_tokens)
+        return answer
+
+# Directly defined context
+context = """The series was originally published in English by Bloomsbury in the United Kingdom and Scholastic Press in the United States. A series of many genres, including fantasy, drama, coming-of-age fiction, and the British school story (which includes elements of mystery, thriller, adventure, horror, and romance), the world of Harry Potter explores numerous themes and includes many cultural meanings and references.[1] Major themes in the series include prejudice, corruption, madness, and death.;"""
+
+# Initialize the QnA system
+qna_system = QnA()
+
+# User questions
+question1 = "where was the series originally published?"
+question2 = "which genres does the series include?"
+
+# Retrieve answers
+print("Answer to question 1:", qna_system.get_answer(question1, context))
+print("Answer to question 2:", qna_system.get_answer(question2, context))
