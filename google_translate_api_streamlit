@@ -1,0 +1,31 @@
+import streamlit as st
+from googletrans import Translator, LANGUAGES
+
+# Inicjalizacja tłumacza
+translator = Translator()
+
+# Tytuł aplikacji
+st.title('Tłumacz Streamlit')
+
+# Wprowadzenie tekstu
+text = st.text_area("Wprowadź tekst do tłumaczenia:")
+
+# Wybór języka źródłowego
+source_lang = st.selectbox("Wybierz język źródłowy:", ['auto'] + list(LANGUAGES.values()))
+
+# Znajdowanie klucza języka
+source_lang_key = list(LANGUAGES.keys())[list(LANGUAGES.values()).index(source_lang)] if source_lang != 'auto' else 'auto'
+
+# Wybór języka docelowego
+target_lang = st.selectbox("Wybierz język docelowy:", list(LANGUAGES.values()))
+
+# Znajdowanie klucza języka docelowego
+target_lang_key = list(LANGUAGES.keys())[list(LANGUAGES.values()).index(target_lang)]
+
+# Przycisk tłumaczenia
+if st.button('Tłumacz'):
+    # Tłumaczenie tekstu
+    translated = translator.translate(text, src=source_lang_key, dest=target_lang_key)
+    # Wyświetlanie tłumaczonego tekstu
+    st.text_area("Przetłumaczony tekst:", value=translated.text, height=200, max_chars=None, key=None)
+
