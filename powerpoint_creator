@@ -1,0 +1,62 @@
+from pptx import Presentation
+from pptx.util import Inches, Pt
+from pptx.enum.text import PP_ALIGN
+from pptx.dml.color import RGBColor
+
+# Creating a new presentation
+presentation = Presentation()
+
+# List of sentences to place on slides
+sentences = [
+    "1. Ich gehe jeden Tag joggen. - I go jogging every day.",
+    "2. Meine Familie plant dieses Jahr eine Reise nach Italien. - My family is planning a trip to Italy this year.",
+    "3. Der Kaffee ist zu heiß zum Trinken. - The coffee is too hot to drink.",
+    "4. Können Sie das Fenster öffnen? - Can you open the window?",
+    "5. Ich habe gestern einen interessanten Artikel gelesen. - I read an interesting article yesterday.",
+    "6. Mein Handyakku ist fast leer. - My phone battery is almost empty.",
+    "7. Wir müssen neue Möbel für unser Wohnzimmer kaufen. - We need to buy new furniture for our living room.",
+    "8. Die Prüfung war schwieriger als erwartet. - The exam was harder than expected.",
+    "9. Ich möchte nächstes Jahr einen Marathon laufen. - I want to run a marathon next year.",
+    "10. Die Suppe schmeckt ausgezeichnet. - The soup tastes excellent.",
+    "11. Können wir uns um 15 Uhr am Bahnhof treffen? - Can we meet at the train station at 3 p.m.?",
+    "12. Ich muss meinen Reisepass erneuern. - I need to renew my passport.",
+    "13. Dieses Buch gehört meiner Schwester. - This book belongs to my sister.",
+    "14. Der Film beginnt um 20 Uhr. - The movie starts at 8 p.m.",
+    "15. Ich lerne seit drei Jahren Spanisch. - I've been learning Spanish for three years.",
+    "16. Das Museum wird nächste Woche geschlossen. - The museum will be closed next week.",
+    "17. Er arbeitet als Ingenieur in einer großen Firma. - He works as an engineer in a large company.",
+    "18. Das Wetter wird morgen besser sein. - The weather will be better tomorrow.",
+    "19. Ich habe meine Brille zu Hause vergessen. - I forgot my glasses at home.",
+    "20. Kannst du mir das Salz reichen? - Can you pass me the salt?"
+]
+
+# Creating slides
+for sentence in sentences:
+    slide_layout = presentation.slide_layouts[5]  # Selecting slide layout
+    slide = presentation.slides.add_slide(slide_layout)
+
+    # Setting black background
+    background = slide.background
+    fill = background.fill
+    fill.solid()
+    fill.fore_color.rgb = RGBColor(0, 0, 0)
+
+    # Adding text box
+    txBox = slide.shapes.add_textbox(Inches(1), Inches(2), Inches(8), Inches(1))
+    tf = txBox.text_frame
+    tf.text = sentence
+
+    # Adjusting text formatting
+    p = tf.paragraphs[0]
+    p.alignment = PP_ALIGN.CENTER
+    run = p.runs[0]
+    run.font.size = Pt(24)  # Setting font size
+    run.font.color.rgb = RGBColor(255, 255, 255)  # Setting white text color
+
+    # Centering the text box on the slide
+    # Can be adjusted if more precise placement is needed
+    txBox.left = int((presentation.slide_width - txBox.width) / 2)
+    txBox.top = int((presentation.slide_height - txBox.height) / 2)
+
+# Saving the presentation to a file
+presentation.save("my_presentation.pptx")
