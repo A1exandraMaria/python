@@ -1,0 +1,73 @@
+import numpy as np
+import streamlit as st
+import matplotlib.pyplot as plt
+
+from scipy.stats import norm
+
+
+def black_scholes(S, K, T, r, sigma, option_type='call'):
+    d1 = (np.log(S / K) + (r + 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
+    d2 = d1 - sigma * np.sqrt(T)
+
+    if option_type == 'call':
+        option_price = S * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
+    elif option_type == 'put':
+        option_price = K * np.exp(-r * T) * norm.cdf(-d2) - S * norm.cdf(-d1)
+    else:
+        raise ValueError("Invalid option type. Choose 'call' or 'put'.")
+
+    return option_price
+
+
+def monte_carlo_option_price(S, K, T, r, sigma, option_type='call', num_simulations=10000):
+    dt = 1 / 252
+    num_steps = int(T / dt)
+
+    option_prices = []
+    for _ in range(num_simulations):
+        S_t = S
+        for _ in range(num_steps):
+            z = np.random.normal(0, 1)
+            S_t *= np.exp((r - 0.5 * sigma ** 2) * dt + sigma * np.sqrt(dt) * z)
+
+        if option_type == 'call':
+            option_prices.append(max(S_t - K, 0) * np.exp(-r * T))
+        elif option_type == 'put':
+            option_prices.append(max(K - S_t, 0) * np.exp(-r * T))
+
+    return option_prices
+
+
+st.title('Monte Carlo Options Pricing')
+st.sidebar.title('Option Parameters')
+
+S = st.sidebar.number_input('Stock Price (S)', min_value=0.01, value=100.0, step=0.01)
+K = st.sidebar.number_input('Strike Price (K)', min_value=0.01, value=100.0, step=0.01)
+T = st.sidebar.number_input('Time to Maturity (T)', min_value=0.01, value=1.0, step=0.01)
+r = st.sidebar.number_input('Risk-Free Rate (r)', min_value=0.0, value=0.05, step=0.01)
+sigma = st.sidebar.number_input('Volatility (sigma)', min_value=0.0, value=0.2, step=0.01)
+
+num_simulations = 10000
+
+option_type = st.sidebar.radio('Option Type', ['Call', 'Put'])
+
+if st.sidebar.button('Run Monte Carlo simulation'):
+    call_prices = monte_carlo_option_price(S, K, T, r, sigma, option_type='call', num_simulations=num_simulations)
+
+    put_prices = monte_carlo_option_price(S, K, T, r, sigma, option_type='put', num_simulations=num_simulations)
+
+    fig, ax = plt.subplots()
+    ax.hist(call_prices, bins=50, color='skyblue', edgecolor='black', alpha=0.7)
+    ax.set_title('Histogram Option Call Prices (Monte Carlo)')
+    ax.set_xlabel('Option Price')
+    ax.set_ylabel('Frequency')
+    ax.grid(True)
+    st.pyplot(fig)
+
+    fig, ax = plt.subplots()
+    ax.hist(put_prices, bins=50, color='lightgreen', edgecolor='black', alpha=0.7)
+    ax.set_title('Histogram Option Put Prices (Monte Carlo)')
+    ax.set_xlabel('Option Price')
+    ax.set_ylabel('Frequency')
+    ax.grid(True)
+    st.pyplot(fig)
