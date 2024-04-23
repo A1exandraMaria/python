@@ -1,0 +1,47 @@
+import numpy as np
+from scipy.stats import norm
+
+def black_scholes(S, K, T, r, sigma, option_type='call'):
+    d1 = (np.log(S / K) + (r + 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
+    d2 = d1 - sigma * np.sqrt(T)
+    
+    if option_type == 'call':
+        option_price = S * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
+    elif option_type == 'put':
+        option_price = K * np.exp(-r * T) * norm.cdf(-d2) - S * norm.cdf(-d1)
+    else:
+        raise ValueError("Invalid option type. Choose 'call' or 'put'.")
+    
+    return option_price
+
+def monte_carlo_option_price(S, K, T, r, sigma, option_type='call', num_simulations=10000):
+    dt = 1 / 252
+    num_steps = int(T / dt)
+    
+    option_prices = []
+    for _ in range(num_simulations):
+        S_t = S
+        for _ in range(num_steps):
+            z = np.random.normal(0, 1)
+            S_t *= np.exp((r - 0.5 * sigma ** 2) * dt + sigma * np.sqrt(dt) * z)
+            
+        if option_type == 'call':
+            option_prices.append(max(S_t - K, 0) * np.exp(-r * T))
+        elif option_type == 'put':
+            option_prices.append(max(K - S_t, 0) * np.exp(-r * T))
+    
+    option_price = np.mean(option_prices)
+    
+    return option_price
+
+S = 100
+K = 100
+T = 1
+r = 0.05
+sigma = 0.2
+
+call_price_mc = monte_carlo_option_price(S, K, T, r, sigma, option_type='call')
+print("Call Option Price (Monte Carlo):", call_price_mc)
+
+put_price_mc = monte_carlo_option_price(S, K, T, r, sigma, option_type='put')
+print("Put Option Price (Monte Carlo):", put_price_mc)
